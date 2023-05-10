@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use App\Models\Produit;
 use App\Models\Categorie;
 use Illuminate\Http\Request;
 use GuzzleHttp\Handler\Proxy;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 
 class ProduitsController extends Controller
@@ -30,14 +32,27 @@ class ProduitsController extends Controller
     public function detail(Produit $produit)
     {
         
-        $produits = Produit::where('categorie_id', $produit->categorie_id)->inRandomOrder()->limit(4)->get(); // Sélectionner les 4 produits similaires de la catégorie aléatoirement 
+        $produits = Produit::where('categorie_id', $produit->categorie_id)
+                          -> inRandomOrder()->limit(4)->get(); // Sélectionner les 4 produits similaires de la catégorie aléatoirement 
         
         return view('detail', compact('produit', 'produits'));
     }
 
+    /*
+    *  Méthode qui permet d'jouter au caddie, contrôle l'existence du produit et met à jour la quantité
+    */
     public function addToCart(Produit $produit)
     {
-        
+        /* On vérifie l'existence du produit dans le panier 
+           SELECT * FROM Cart WHERE user_id = " ? " AND produit_id = $produit -> id LIMIT (0 , 1) ;
+        */ 
+
+        $cart = Cart::where('user_id', Auth::user()->id)
+                   -> where('produit_id', $produit->id)
+                   -> limit(1)->get();
+
+        dd($cart);
+
         //return Redirect::route('accueil.detail');
     }
 
